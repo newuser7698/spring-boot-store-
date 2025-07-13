@@ -1,5 +1,6 @@
 package com.codewithmosh.store.config;
 
+import com.codewithmosh.store.filters.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -24,6 +26,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -51,7 +54,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         // Stateless sections ( Token based authentication )
         // Disable CSRF -> it is an attack where the browser make a request without the user knowledge
         // Authorized Http requests (public or private)
@@ -66,8 +69,9 @@ public class SecurityConfig {
                      .requestMatchers("/carts/**").permitAll() // make any request with cart public
                      .requestMatchers(HttpMethod.POST,"/users").permitAll() // register user is public
                      .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
-                      .anyRequest().authenticated() // make all other requests private
-            );
+                     .anyRequest().authenticated() // make all other requests private
+            )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
