@@ -84,8 +84,15 @@ public class SecurityConfig {
             .authorizeHttpRequests(c ->
                     c
                             .requestMatchers("/carts/**").permitAll() // make any request with cart public
+                            .requestMatchers("/swagger-ui/**").permitAll() // make any request with cart public
+                            .requestMatchers("/swagger-ui.html").permitAll() // make any request with cart public
+                            .requestMatchers("/v3/api-docs/**").permitAll() // make any request with cart public
                             .requestMatchers("/admin/**").hasRole(Role.ADMIN.name()) // only user with role of ADMIN
                             .requestMatchers(HttpMethod.POST, "/users").permitAll() // register user is public
+                            .requestMatchers(HttpMethod.GET, "/products/**").permitAll() // get product not need to register
+                            .requestMatchers(HttpMethod.POST, "/products/**").hasRole(Role.ADMIN.name()) // only admin can change the product
+                            .requestMatchers(HttpMethod.PUT, "/products/**").hasRole(Role.ADMIN.name()) // only admin can change the product
+                            .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole(Role.ADMIN.name()) // only admin can change the product
                             .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                             .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
                             .requestMatchers(HttpMethod.POST, "/checkout/webhook").permitAll()
