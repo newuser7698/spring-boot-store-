@@ -1,60 +1,59 @@
 package com.codewithmosh.store.services;
 
+import com.codewithmosh.store.config.JwtConfig;
 import com.codewithmosh.store.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
 import java.util.Date;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 // This class is used to generate web token
-
+@AllArgsConstructor
 @Service
 public class JwtService {
-    @Value("${spring.jwt.secret}")
-    private String secret;
+    private final JwtConfig jwtConfig;
 
-    public String generateToken(User user) {
-        final long tokenExpiration = 86400; // the number of seconds in one day
-
-        return Jwts.builder()
-                .subject(user.getId().toString())
-                .claim("name", user.getName())
-                .claim("email", user.getName())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
-                .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
-                .compact();
+    public Jwt generateAccessToken(User user) {
+        return generateAccessToken(user, jwtConfig.getAccessTokenExpiration());
     }
 
-    public boolean validateToken(String token) {
+    public Jwt generateRefreshToken(User user) {
+        return generateAccessToken(user, jwtConfig.getRefreshTokenExpiration());
+    }
+
+    private Jwt generateAccessToken(User user, long tokenExpiration) {
+
+        var claims = Jwts
+                .claims()
+                .subject(user.getId().toString())
+                .add("email", user.getEmail())
+                .add("name", user.getName())
+                .add("role", user.getRole())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 1000 * tokenExpiration))
+                .build();
+
+        return new Jwt(claims, jwtConfig.getSecretKey());
+    }
+
+    public Jwt parseToken(String token) {
         try {
             var claims = getClaims(token);
-            return claims.getExpiration().after(new Date());
-        } catch (JwtException exp) {
-            return false;
+            return new Jwt(claims, jwtConfig.getSecretKey());
+        } catch (JwtException e) {
+            return null;
         }
     }
 
     private Claims getClaims(String token) {
         return Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                .verifyWith(jwtConfig.getSecretKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
     }
-
-    public Long getUserIdFromToken(String token) {
-        return Long.valueOf(getClaims(token).getSubject());
-
-    }
-
 
 }

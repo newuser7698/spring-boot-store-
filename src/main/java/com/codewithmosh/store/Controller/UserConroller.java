@@ -5,6 +5,7 @@ import com.codewithmosh.store.DTO.RegisterUserRequest;
 import com.codewithmosh.store.DTO.UpdateUserRequest;
 import com.codewithmosh.store.DTO.UserDto;
 import com.codewithmosh.store.Mappers.UserMapper;
+import com.codewithmosh.store.entities.Role;
 import com.codewithmosh.store.repositories.UserRepository;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -52,7 +53,10 @@ public class UserConroller {
         if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.badRequest().body(Map.of("email", "Email is already registered."));
         }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(Role.USER);
+
         userRepository.save(user);
         var userDto = userMapper.toDto(user);
 
