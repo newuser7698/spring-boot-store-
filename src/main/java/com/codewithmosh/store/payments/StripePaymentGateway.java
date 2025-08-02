@@ -33,7 +33,7 @@ public class StripePaymentGateway implements PaymentGateway {
                     .setMode(SessionCreateParams.Mode.PAYMENT) // set the mode to payment there is another mode for subscription if your app subscribe
                     .setSuccessUrl(websiteUrl + "/checkout-success?orderId=" + order.getId()) // we set the success URL -> the base url changes so it's better to store it on config file
                     .setCancelUrl(websiteUrl + "/checkout-cancel") // we set the cancel url
-                    .putMetadata("order-id", order.getId().toString()); // we add the order id to the stripe we we gwt it in the checkout
+                    .setPaymentIntentData(createPaymentInentData(order)); // we add the order id to the stripe we we gwt it in the checkout
             // after creating the builder we add items to this builder
             // for each item we add a stripe line item
             order.getItems().forEach(item -> {
@@ -48,6 +48,10 @@ public class StripePaymentGateway implements PaymentGateway {
             System.out.println(ex.getMessage());
             throw new PaymentException("Error creating a checkout session");
         }
+    }
+
+    private SessionCreateParams.PaymentIntentData createPaymentInentData(Order order) {
+        return SessionCreateParams.PaymentIntentData.builder().putMetadata("order-id", order.getId().toString()).build();
     }
 
     @Override
@@ -67,11 +71,11 @@ public class StripePaymentGateway implements PaymentGateway {
                     // update the order to paid
                     // we sent the id to the stripe as meta data so we get it here
                     // we do not define what is the type of throw ???
-                     Optional.of(new PaymentResult(extractOrderId(event), PaymentStatus.PAID));
+                        Optional.of(new PaymentResult(extractOrderId(event), PaymentStatus.PAID));
 
                 case "payment_intent.payment_failed" ->
                     // update the order to failed
-                     Optional.of(new PaymentResult(extractOrderId(event), PaymentStatus.FAILED));
+                        Optional.of(new PaymentResult(extractOrderId(event), PaymentStatus.FAILED));
 
                 default -> Optional.empty();
 
