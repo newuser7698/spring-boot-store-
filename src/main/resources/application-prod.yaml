@@ -1,4 +1,4 @@
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL}
-websiteUrl:   # This is the front end page we will redirect the user to
+websiteUrl: https://www.market.com/   # This is the front end page we will redirect the user to
