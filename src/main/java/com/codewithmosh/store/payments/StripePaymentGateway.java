@@ -61,7 +61,9 @@ public class StripePaymentGateway implements PaymentGateway {
             var payload = request.getPayload();
             var signature = request.getHeaders().get("stripe-signature");
             System.out.println("signature 12: " + signature);
+            System.out.println("webhookSecret: " + webhookSecret);
             var event = Webhook.constructEvent(payload, signature, webhookSecret);
+            System.out.println("event: " + event);
             System.out.println("🌀"+event.getType());
             // based on the type we change the stripeObject to
             // there is not one type return
