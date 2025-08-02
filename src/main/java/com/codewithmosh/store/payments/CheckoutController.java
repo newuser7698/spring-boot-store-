@@ -31,6 +31,8 @@ public class CheckoutController {
             // json object that stripe sends to us to tell us what happened
             @RequestBody String payload
     ) {
+        System.out.println("payload: " + payload);
+        System.out.println("signature: " + signature);
         checkoutService.handleWebhookEvent(new WebhookRequest(signature, payload));
     }
 
