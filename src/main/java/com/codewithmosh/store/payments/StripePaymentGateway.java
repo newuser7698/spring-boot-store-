@@ -59,7 +59,7 @@ public class StripePaymentGateway implements PaymentGateway {
         try {
             // this code takes a webhook request -> { orderId, PaymentStatus }
             var payload = request.getPayload();
-            var signature = request.getHeaders().get("stripe-signature");
+            var signature = request.getHeaders().get("Stripe-Signature");
 
             var event = Webhook.constructEvent(payload, signature, webhookSecret);
 
